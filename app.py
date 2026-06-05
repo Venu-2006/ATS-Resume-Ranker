@@ -13,9 +13,10 @@ st.title("🏆 AI-Powered Applicant Tracking System (ATS)")
 st.write(
     "Upload PDF or DOCX resumes and rank candidates using Gemini AI."
 )
-# ------------------------------
+
+# ----------------------------------
 # Sidebar Weightages
-# -----------------------------
+# ----------------------------------
 
 st.sidebar.header("Evaluation Weightages")
 
@@ -54,18 +55,18 @@ certification_weight = st.sidebar.slider(
     5
 )
 
-# -----------------------------
+# ----------------------------------
 # Job Description
-# -----------------------------
+# ----------------------------------
 
 job_desc = st.text_area(
     "Paste Job Description",
     height=250
 )
 
-# -----------------------------
+# ----------------------------------
 # Resume Upload
-# -----------------------------
+# ----------------------------------
 
 uploaded_files = st.file_uploader(
     "Upload Resumes (PDF or DOCX)",
@@ -73,9 +74,9 @@ uploaded_files = st.file_uploader(
     accept_multiple_files=True
 )
 
-# -----------------------------
+# ----------------------------------
 # Rank Button
-# -----------------------------
+# ----------------------------------
 
 if st.button("Rank Resumes"):
 
@@ -88,16 +89,6 @@ if st.button("Rank Resumes"):
         st.stop()
 
     progress = st.progress(0)
-    with st.spinner("Analyzing resumes..."):
-    result = rank_resumes(
-        job_desc,
-        resumes,
-        skills_weight,
-        experience_weight,
-        projects_weight,
-        education_weight,
-        certification_weight
-    )
 
     with st.spinner("Analyzing resumes using Gemini AI..."):
 
@@ -105,6 +96,7 @@ if st.button("Rank Resumes"):
 
         progress.progress(20)
 
+        # Extract Resume Text
         for file in uploaded_files:
 
             try:
@@ -119,6 +111,7 @@ if st.button("Rank Resumes"):
                 )
 
             except Exception as e:
+
                 st.error(
                     f"Error reading {file.name}: {e}"
                 )
@@ -141,9 +134,9 @@ if st.button("Rank Resumes"):
 
             st.success("Ranking Completed!")
 
-            # -----------------------------
+            # ----------------------------------
             # Evaluation Criteria
-            # -----------------------------
+            # ----------------------------------
 
             st.subheader("Evaluation Criteria Used")
 
@@ -169,11 +162,11 @@ if st.button("Rank Resumes"):
 
             st.markdown("---")
 
-            st.subheader("🏆 Top 3 Candidates")
+            st.subheader("🏆 Top Ranked Candidates")
 
-            # -----------------------------
+            # ----------------------------------
             # Candidate Results
-            # -----------------------------
+            # ----------------------------------
 
             for candidate in result["top_3"]:
 
@@ -213,16 +206,11 @@ if st.button("Rank Resumes"):
 
             st.markdown("---")
 
-            with st.expander(
-                "View Full Gemini Response"
-            ):
+            with st.expander("View Full Gemini Response"):
                 st.json(result)
-
-            
 
         except Exception as e:
 
             st.error(
                 f"Error: {str(e)}"
             )
-
