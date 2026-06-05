@@ -1,4 +1,5 @@
 import streamlit as st
+import json
 
 from parser import extract_text
 from grok_ranker import rank_resumes
@@ -9,16 +10,29 @@ st.set_page_config(
     layout="wide"
 )
 
+# ==================================================
+# Header
+# ==================================================
+
 st.title("🏆 AI-Powered Applicant Tracking System (ATS)")
-st.write(
-    "Upload PDF or DOCX resumes and rank candidates using Gemini AI."
+st.markdown(
+    """
+Upload PDF or DOCX resumes and rank candidates using Gemini AI.
+
+The ATS evaluates candidates based on:
+- Skills Match
+- Experience
+- Projects
+- Education
+- Certifications
+"""
 )
 
-# ----------------------------------
-# Sidebar Weightages
-# ----------------------------------
+# ==================================================
+# Sidebar
+# ==================================================
 
-st.sidebar.header("Evaluation Weightages")
+st.sidebar.header("⚙️ Evaluation Weightages")
 
 skills_weight = st.sidebar.slider(
     "Skills Match (%)",
@@ -55,48 +69,57 @@ certification_weight = st.sidebar.slider(
     5
 )
 
-# ----------------------------------
+# ==================================================
 # Job Description
-# ----------------------------------
+# ==================================================
+
+st.subheader("📋 Job Description")
 
 job_desc = st.text_area(
-    "Paste Job Description",
+    "Paste the Job Description",
     height=250
 )
 
-# ----------------------------------
+# ==================================================
 # Resume Upload
-# ----------------------------------
+# ==================================================
+
+st.subheader("📁 Upload Resumes")
 
 uploaded_files = st.file_uploader(
-    "Upload Resumes (PDF or DOCX)",
+    "Upload PDF or DOCX Resumes",
     type=["pdf", "docx"],
     accept_multiple_files=True
 )
 
-# ----------------------------------
+# ==================================================
 # Rank Button
-# ----------------------------------
+# ==================================================
 
-if st.button("Rank Resumes"):
+if st.button("🚀 Rank Resumes"):
 
     if not job_desc:
         st.error("Please enter a Job Description.")
         st.stop()
 
     if not uploaded_files:
-        st.error("Please upload resumes.")
+        st.error("Please upload at least one resume.")
         st.stop()
 
     progress = st.progress(0)
 
-    with st.spinner("Analyzing resumes using Gemini AI..."):
+    with st.spinner(
+        "🔍 Extracting resumes | 🧠 Matching skills | 📊 Ranking candidates..."
+    ):
 
         resumes = []
 
         progress.progress(20)
 
-        # Extract Resume Text
+        # ------------------------------------------
+        # Extract Resume Content
+        # ------------------------------------------
+
         for file in uploaded_files:
 
             try:
@@ -118,6 +141,10 @@ if st.button("Rank Resumes"):
 
         progress.progress(50)
 
+        # ------------------------------------------
+        # ATS Ranking
+        # ------------------------------------------
+
         try:
 
             result = rank_resumes(
@@ -132,81 +159,213 @@ if st.button("Rank Resumes"):
 
             progress.progress(100)
 
-            st.success("Ranking Completed!")
+            st.success("✅ Ranking Completed Successfully!")
 
-            # ----------------------------------
+            # ==========================================
+            # Dashboard Metrics
+            # ==========================================
+
+            top_score = max(
+                candidate["score"]
+                for candidate in result["top_3"]
+            )
+
+            best_candidate = result["top_3"][0]
+
+            st.success(
+                f"🥇 Best Candidate: "
+                f"{best_candidate['resume']} "
+                f"| Score: {best_candidate['score']}%"
+            )
+
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                st.metric(
+                    "📄 Resumes Uploaded",
+                    len(uploaded_files)
+                )
+
+            with col2:
+                st.metric(
+                    "🏆 Candidates Ranked",
+                    len(result["top_3"])
+                )
+
+            with col3:
+                st.metric(
+                    "⭐ Highest Score",
+                    f"{top_score}%"
+                )
+
+            st.markdown("---")
+
+            # ==========================================
             # Evaluation Criteria
-            # ----------------------------------
+            # ==========================================
 
-            st.subheader("Evaluation Criteria Used")
+            st.subheader("⚙️ Evaluation Criteria Used")
 
-            st.write(
-                f"Skills Match: {skills_weight}%"
+            col1, col2, col3, col4, col5 = st.columns(5)
+
+            col1.metric(
+                "Skills",
+                f"{skills_weight}%"
             )
 
-            st.write(
-                f"Experience: {experience_weight}%"
+            col2.metric(
+                "Experience",
+                f"{experience_weight}%"
             )
 
-            st.write(
-                f"Projects: {projects_weight}%"
+            col3.metric(
+                "Projects",
+                f"{projects_weight}%"
             )
 
-            st.write(
-                f"Education: {education_weight}%"
+            col4.metric(
+                "Education",
+                f"{education_weight}%"
             )
 
-            st.write(
-                f"Certifications: {certification_weight}%"
+            col5.metric(
+                "Certification",
+                f"{certification_weight}%"
             )
 
             st.markdown("---")
 
-            st.subheader("🏆 Top Ranked Candidates")
+            # ==========================================
+            # Top Ranked Candidates
+            # ==========================================
 
-            # ----------------------------------
-            # Candidate Results
-            # ----------------------------------
+            st.subheader(
+                "🏆 Top Ranked Candidates"
+            )
+
+            st.caption(
+                "Detailed ATS analysis for the highest-ranked candidates."
+            )
 
             for candidate in result["top_3"]:
 
-                st.markdown("---")
+                rank = candidate.get("rank")
+                score = candidate.get("score", 0)
 
-                st.markdown(
-                    f"## Rank #{candidate.get('rank')}"
-                )
+                with st.expander(
+                    f"🏆 Rank #{rank} - {candidate.get('resume')}",
+                    expanded=(rank == 1)
+                ):
 
-                st.write(
-                    f"**Resume:** {candidate.get('resume')}"
-                )
+                    st.progress(score / 100)
 
-                st.write(
-                    f"**ATS Match Score:** {candidate.get('score')}%"
-                )
+                    st.markdown(
+                        f"### ATS Match Score: {score}%"
+                    )
 
-                st.write(
-                    f"**Recommendation:** {candidate.get('recommendation', 'N/A')}"
-                )
+                    recommendation = candidate.get(
+                        "recommendation",
+                        "N/A"
+                    )
 
-                st.write(
-                    f"**Reason:** {candidate.get('reason', 'N/A')}"
-                )
+                    if recommendation == "Highly Recommended":
+                        st.success(recommendation)
 
-                st.write(
-                    f"**Matched Skills:** {', '.join(candidate.get('matched_skills', []))}"
-                )
+                    elif recommendation == "Recommended":
+                        st.info(recommendation)
 
-                st.write(
-                    f"**Missing Skills:** {', '.join(candidate.get('missing_skills', []))}"
-                )
+                    elif recommendation == "Consider":
+                        st.warning(recommendation)
 
-                st.write(
-                    f"**Strengths:** {', '.join(candidate.get('strengths', []))}"
-                )
+                    else:
+                        st.error(recommendation)
+
+                    st.write(
+                        f"**Reason:** {candidate.get('reason', 'N/A')}"
+                    )
+
+                    col1, col2 = st.columns(2)
+
+                    with col1:
+
+                        st.markdown(
+                            "### ✅ Matched Skills"
+                        )
+
+                        matched_skills = candidate.get(
+                            "matched_skills",
+                            []
+                        )
+
+                        if matched_skills:
+
+                            for skill in matched_skills:
+                                st.write(f"• {skill}")
+
+                        else:
+                            st.write("None")
+
+                    with col2:
+
+                        st.markdown(
+                            "### ❌ Missing Skills"
+                        )
+
+                        missing_skills = candidate.get(
+                            "missing_skills",
+                            []
+                        )
+
+                        if missing_skills:
+
+                            for skill in missing_skills:
+                                st.write(f"• {skill}")
+
+                        else:
+                            st.write("None")
+
+                    st.markdown(
+                        "### 💪 Strengths"
+                    )
+
+                    strengths = candidate.get(
+                        "strengths",
+                        []
+                    )
+
+                    if strengths:
+
+                        for strength in strengths:
+                            st.write(
+                                f"• {strength}"
+                            )
+
+                    else:
+                        st.write("No strengths provided.")
 
             st.markdown("---")
 
-            with st.expander("View Full Gemini Response"):
+            # ==========================================
+            # Download Results
+            # ==========================================
+
+            st.download_button(
+                label="📥 Download ATS Results",
+                data=json.dumps(
+                    result,
+                    indent=4
+                ),
+                file_name="ats_results.json",
+                mime="application/json"
+            )
+
+            # ==========================================
+            # Raw Gemini Output
+            # ==========================================
+
+            with st.expander(
+                "🔍 View Full Gemini Response"
+            ):
                 st.json(result)
 
         except Exception as e:
