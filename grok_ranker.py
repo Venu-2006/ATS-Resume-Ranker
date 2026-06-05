@@ -1,22 +1,23 @@
 import os
 import json
 import re
-
+import streamlit as st
 import google.generativeai as genai
 from dotenv import load_dotenv
 
 load_dotenv()
 
-genai.configure(
-    api_key=os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        api_key = st.secrets["GEMINI_API_KEY"]
-)
+# Get API Key from .env (local) or Streamlit Secrets (cloud)
+api_key = os.getenv("GEMINI_API_KEY")
+
+if not api_key:
+    api_key = st.secrets["GEMINI_API_KEY"]
+
+genai.configure(api_key=api_key)
 
 model = genai.GenerativeModel(
     "gemini-2.5-flash"
 )
-
 
 def rank_resumes(
     job_desc,
