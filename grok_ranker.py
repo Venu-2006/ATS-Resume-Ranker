@@ -9,6 +9,8 @@ load_dotenv()
 
 genai.configure(
     api_key=os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        api_key = st.secrets["GEMINI_API_KEY"]
 )
 
 model = genai.GenerativeModel(
