@@ -2,22 +2,21 @@ import os
 import json
 import re
 import streamlit as st
+
 import google.generativeai as genai
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Get API Key from .env (local) or Streamlit Secrets (cloud)
 api_key = os.getenv("GEMINI_API_KEY")
 
-if not api_key:
-    api_key = st.secrets["GEMINI_API_KEY"]
 
-genai.configure(api_key=api_key)
+genai.configure(api_key=api_key)  
 
 model = genai.GenerativeModel(
     "gemini-2.5-flash"
 )
+
 
 def rank_resumes(
     job_desc,
@@ -73,6 +72,11 @@ Instructions:
 10. Mention matched skills.
 11. Mention missing skills.
 12. Provide recommendation: if required or NA
+13. ONLY compare candidates against skills, qualifications, and requirements explicitly mentioned in the Job Description.
+14. NEVER invent additional skills, technologies, certifications, or requirements.
+15. A skill can be listed in "missing_skills" ONLY if it is explicitly present in the Job Description.
+16. If a skill is not mentioned in the Job Description, do not include it in matched_skills or missing_skills.
+17. Do not assume industry-standard requirements.
 
 Return ONLY valid JSON.
 
