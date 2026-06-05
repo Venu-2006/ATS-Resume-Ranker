@@ -88,6 +88,16 @@ if st.button("Rank Resumes"):
         st.stop()
 
     progress = st.progress(0)
+    with st.spinner("Analyzing resumes..."):
+    result = rank_resumes(
+        job_desc,
+        resumes,
+        skills_weight,
+        experience_weight,
+        projects_weight,
+        education_weight,
+        certification_weight
+    )
 
     with st.spinner("Analyzing resumes using Gemini AI..."):
 
