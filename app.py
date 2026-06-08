@@ -187,10 +187,10 @@ if st.button("🚀 Rank Resumes"):
 
             top_score = max(
                 candidate["score"]
-                for candidate in result["top_3"]
+                for candidate in result["top_candidates"]
             )
 
-            best_candidate = result["top_3"][0]
+            best_candidate = result["top_candidates"][0]
 
             st.success(
                 f"🥇 Best Candidate: "
@@ -209,7 +209,7 @@ if st.button("🚀 Rank Resumes"):
             with col2:
                 st.metric(
                     "🏆 Candidates Ranked",
-                    len(result["top_3"])
+                    len(result["top_candidates"])
                 )
 
             with col3:
@@ -260,14 +260,14 @@ if st.button("🚀 Rank Resumes"):
             # ==========================================
 
             st.subheader(
-                "🏆 Top Ranked Candidates"
+            f"🏆 Top {shortlist_count} Shortlisted Candidates"
             )
 
             st.caption(
                 "Detailed ATS analysis for the highest-ranked candidates."
             )
 
-            for candidate in result["top_3"]:
+            for candidate in result["top_candidates"]:
 
                 rank = candidate.get("rank")
                 score = candidate.get("score", 0)
