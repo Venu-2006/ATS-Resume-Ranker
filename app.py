@@ -91,7 +91,26 @@ uploaded_files = st.file_uploader(
     type=["pdf", "docx"],
     accept_multiple_files=True
 )
+# ==================================================
+# Shortlisting Settings
+# ==================================================
 
+st.subheader("🎯 Shortlisting Settings")
+
+shortlist_count = st.number_input(
+    "Number of Candidates to Shortlist",
+    min_value=1,
+    max_value=100,
+    value=3,
+    step=1
+)
+
+minimum_score = st.slider(
+    "Minimum ATS Score Required",
+    min_value=0,
+    max_value=100,
+    value=60
+)
 # ==================================================
 # Rank Button
 # ==================================================
@@ -148,15 +167,16 @@ if st.button("🚀 Rank Resumes"):
         try:
 
             result = rank_resumes(
-                job_desc=job_desc,
-                resumes=resumes,
-                skills_weight=skills_weight,
-                experience_weight=experience_weight,
-                projects_weight=projects_weight,
-                education_weight=education_weight,
-                certification_weight=certification_weight
-            )
-
+            job_desc=job_desc,
+            resumes=resumes,
+            skills_weight=skills_weight,
+            experience_weight=experience_weight,
+            projects_weight=projects_weight,
+            education_weight=education_weight,
+            certification_weight=certification_weight,
+            shortlist_count=shortlist_count,
+            minimum_score=minimum_score
+        )
             progress.progress(100)
 
             st.success("✅ Ranking Completed Successfully!")
