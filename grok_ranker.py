@@ -25,7 +25,9 @@ def rank_resumes(
     experience_weight,
     projects_weight,
     education_weight,
-    certification_weight
+    certification_weight,
+    shortlist_count,
+    minimum_score
 ):
 
     resumes_text = ""
@@ -65,9 +67,14 @@ Instructions:
 3. Infer skills from education and experience.
 4. Do NOT mark inferred skills as missing.
 5. Rank candidates relative to each other.
-6.If 3 or more resumes are uploaded, return EXACTLY the Top 3 highest-ranked candidates.
-7. If fewer than 3 resumes are uploaded, return all available candidates.
-8. Give score out of 100.
+6. Return EXACTLY the Top {shortlist_count}
+highest-ranked candidates.
+
+7. Exclude candidates scoring below
+{minimum_score}.
+
+8. If fewer candidates qualify,
+return only those candidates.
 9. Mention strengths.
 10. Mention matched skills.
 11. Mention missing skills.
@@ -83,7 +90,7 @@ Return ONLY valid JSON.
 JSON FORMAT:
 
 {{
-  "top_3": [
+  "top_candidates": [
     {{
       "rank": 1,
       "resume": "candidate1.pdf or DOCX",
